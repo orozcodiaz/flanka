@@ -6,8 +6,7 @@
 import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Trans } from 'react-i18next';
-import { Button, Dropdown, Form, Icon, Input, Message } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Icon, Input } from 'semantic-ui-react';
 import { useDidUpdate, useToggle } from '../../../lib/hooks';
 
 import { useEscapeInterceptor, useForm, useNestedRef } from '../../../hooks';
@@ -72,15 +71,6 @@ const NotificationServices = React.memo(({ ids, onCreate }) => {
 
   return (
     <>
-      <Message>
-        <Trans i18nKey="common.plankaUsesAppriseToSendNotificationsToOver100PopularServices">
-          {'PLANKA uses '}
-          <a href="https://appriseit.com/services/" target="_blank" rel="noreferrer">
-            <b>Apprise</b>
-          </a>
-          {' to send notifications to over 100 popular services.'}
-        </Trans>
-      </Message>
       {ids.map((id) => (
         <div key={id} className={styles.item}>
           <Item id={id} />

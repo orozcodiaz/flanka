@@ -28,7 +28,7 @@ RUN npm install npm --global \
 FROM node:22-alpine
 
 RUN apk -U upgrade \
-  && apk add bash python3 squid --no-cache \
+  && apk add bash squid --no-cache \
   && npm install npm --global
 
 USER node
@@ -43,10 +43,7 @@ COPY --from=server --chown=node:node /app/dist .
 COPY --from=client --chown=node:node /app/dist public
 COPY --from=client --chown=node:node /app/dist/index.html views
 
-RUN python3 -m venv .venv \
-  && .venv/bin/pip3 install --upgrade pip \
-  && .venv/bin/pip3 install -r requirements.txt --no-cache-dir \
-  && mv .env.sample .env \
+RUN mv .env.sample .env \
   && npm config set update-notifier false
 
 VOLUME /app/data

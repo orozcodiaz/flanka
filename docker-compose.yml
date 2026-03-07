@@ -59,7 +59,7 @@ services:
       # It should not be enabled without a rate limiter for security reasons.
       # - SHOW_DETAILED_AUTH_ERRORS=false
 
-      # All outgoing HTTP requests (SMTP, webhooks, Apprise notifications, favicon fetching, etc.)
+      # All outgoing HTTP requests (SMTP, webhooks, favicon fetching, etc.)
       # will be sent through this proxy if set.
       # If commented out, an internal Squid proxy will be started inside the container,
       # which you can control via OUTGOING_BLOCKED_* and OUTGOING_ALLOWED_* below.

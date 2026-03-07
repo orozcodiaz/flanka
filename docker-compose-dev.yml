@@ -47,7 +47,7 @@ services:
       # It should not be enabled without a rate limiter for security reasons.
       # - SHOW_DETAILED_AUTH_ERRORS=false
 
-      # All outgoing HTTP requests (SMTP, webhooks, Apprise notifications, favicon fetching, etc.)
+      # All outgoing HTTP requests (SMTP, webhooks, favicon fetching, etc.)
       # will be sent through this proxy if set.
       # - OUTGOING_PROXY=http://proxy:3128
 
