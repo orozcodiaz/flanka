@@ -57,7 +57,7 @@ jobs:
         run: |
           client/tests/setup-symlinks.sh
           cd server
-          cp .env.sample .env
+          cp .env.example .env
           sed -i "s|^DATABASE_URL=.*|DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DATABASE}|" .env
           npm run db:init
           npm start --prod &

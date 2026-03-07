@@ -6,9 +6,9 @@
 
   _Project mastering driven by fun_
 
-  ![Version](https://img.shields.io/github/package-json/v/plankanban/planka?style=flat-square) [![Docker Pulls](https://img.shields.io/badge/docker_pulls-8M%2B-%23066da5?style=flat-square&color=red)](https://github.com/plankanban/planka/pkgs/container/planka) [![Contributors](https://img.shields.io/github/contributors/plankanban/planka?style=flat-square&color=blue)](https://github.com/plankanban/planka/graphs/contributors) [![Chat](https://img.shields.io/discord/1041440072953765979?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/WqqYNd7Jvt)
+  ![Version](https://img.shields.io/github/package-json/v/plankanban/planka?style=flat-square) [![Contributors](https://img.shields.io/github/contributors/plankanban/planka?style=flat-square&color=blue)](https://github.com/plankanban/planka/graphs/contributors) [![Chat](https://img.shields.io/discord/1041440072953765979?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/WqqYNd7Jvt)
 
-  [Install](https://docs.planka.cloud/docs/installation/docker/production-version/) ·  [Demo](https://planka.app) · [Docs](https://docs.planka.cloud/docs/welcome/) · [API](https://plankanban.github.io/planka/swagger-ui/) · [Cloud](https://planka.app/pricing) · [Pro version](https://planka.app/pro)
+  [Demo](https://planka.app) · [Docs](https://docs.planka.cloud/docs/welcome/) · [API](https://plankanban.github.io/planka/swagger-ui/) · [Cloud](https://planka.app/pricing) · [Pro version](https://planka.app/pro)
 
   ![Demo](https://raw.githubusercontent.com/plankanban/planka/master/assets/demo.gif)
 
@@ -23,9 +23,23 @@
 - **Seamless Authentication:** Single sign-on with OpenID Connect integration
 - **Multilingual & Easy to Translate:** Full internationalization support for a global audience
 
-## How to Deploy
+## Running locally
 
-PLANKA is easy to install using multiple methods - learn more in the [installation guide](https://docs.planka.cloud/docs/welcome/).
+You need **Node.js 20+** and **PostgreSQL**.
+
+1. Copy the env template and add your credentials:
+   ```bash
+   cp server/.env.example server/.env
+   ```
+   Edit `server/.env` and set at least `BASE_URL`, `DATABASE_URL`, and `SECRET_KEY`.
+
+2. Install, build, and run:
+   ```bash
+   npm install
+   npm run server:db:init
+   npm run server:start:prod
+   ```
+   The API runs on port 1337. For development with the client: `npm start` (server + client with hot reload).
 
 For configuration and environment settings, see the [configuration section](https://docs.planka.cloud/docs/category/configuration/).
 
