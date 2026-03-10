@@ -7,7 +7,7 @@ exports.up = async (knex) => {
   await knex.schema.createTable('config', (table) => {
     /* Columns */
 
-    table.bigInteger('id').primary().defaultTo(knex.raw('next_id()'));
+    table.bigIncrements('id').primary();
 
     table.boolean('is_initialized').notNullable();
 

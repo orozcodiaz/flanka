@@ -30,7 +30,7 @@ const createOne = async (values) => {
   if (activeUsersLimit !== null) {
     return sails.getDatastore().transaction(async (db) => {
       const queryResult = await sails
-        .sendNativeQuery('SELECT NULL FROM user_account WHERE is_deactivated = $1 FOR UPDATE', [
+        .sendNativeQuery('SELECT NULL FROM user_account WHERE is_deactivated = ? FOR UPDATE', [
           false,
         ])
         .usingConnection(db);
@@ -106,7 +106,7 @@ const updateOne = async (criteria, values) => {
     return sails.getDatastore().transaction(async (db) => {
       if (enforceActiveLimit) {
         const queryResult = await sails
-          .sendNativeQuery('SELECT NULL FROM user_account WHERE is_deactivated = $1 FOR UPDATE', [
+          .sendNativeQuery('SELECT NULL FROM user_account WHERE is_deactivated = ? FOR UPDATE', [
             false,
           ])
           .usingConnection(db);
@@ -141,20 +141,25 @@ const updateOne = async (criteria, values) => {
       let uploadedFile;
       if (!_.isUndefined(values.avatar) && hasAvatarChanged(user.avatar, prev.avatar)) {
         if (prev.avatar) {
-          const queryResult = await sails
+          await sails
             .sendNativeQuery(
-              'UPDATE uploaded_file SET references_total = CASE WHEN references_total > 1 THEN references_total - 1 END, updated_at = $1 WHERE id = $2 RETURNING *',
+              'UPDATE uploaded_file SET references_total = CASE WHEN references_total > 1 THEN references_total - 1 END, updated_at = ? WHERE id = ?',
               [new Date().toISOString(), prev.avatar.uploadedFileId],
             )
             .usingConnection(db);
 
-          uploadedFile = UploadedFile.qm.transformRowToModel(queryResult.rows[0]);
+          const sel = await sails
+            .sendNativeQuery('SELECT * FROM uploaded_file WHERE id = ?', [
+              prev.avatar.uploadedFileId,
+            ])
+            .usingConnection(db);
+          uploadedFile = UploadedFile.qm.transformRowToModel(sel.rows[0]);
         }
 
         if (user.avatar) {
           const queryResult = await sails
             .sendNativeQuery(
-              'UPDATE uploaded_file SET references_total = references_total + 1, updated_at = $1 WHERE id = $2 AND references_total IS NOT NULL',
+              'UPDATE uploaded_file SET references_total = references_total + 1, updated_at = ? WHERE id = ? AND references_total IS NOT NULL',
               [new Date().toISOString(), user.avatar.uploadedFileId],
             )
             .usingConnection(db);
@@ -179,14 +184,17 @@ const deleteOne = (criteria) =>
 
     let uploadedFile;
     if (user.avatar) {
-      const queryResult = await sails
+      await sails
         .sendNativeQuery(
-          'UPDATE uploaded_file SET references_total = CASE WHEN references_total > 1 THEN references_total - 1 END, updated_at = $1 WHERE id = $2 RETURNING *',
+          'UPDATE uploaded_file SET references_total = CASE WHEN references_total > 1 THEN references_total - 1 END, updated_at = ? WHERE id = ?',
           [new Date().toISOString(), user.avatar.uploadedFileId],
         )
         .usingConnection(db);
 
-      uploadedFile = UploadedFile.qm.transformRowToModel(queryResult.rows[0]);
+      const sel = await sails
+        .sendNativeQuery('SELECT * FROM uploaded_file WHERE id = ?', [user.avatar.uploadedFileId])
+        .usingConnection(db);
+      uploadedFile = UploadedFile.qm.transformRowToModel(sel.rows[0]);
     }
 
     return { user, uploadedFile };

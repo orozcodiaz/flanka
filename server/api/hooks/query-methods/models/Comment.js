@@ -18,7 +18,7 @@ const createOne = (values) =>
 
     const queryResult = await sails
       .sendNativeQuery(
-        'UPDATE card SET comments_total = comments_total + 1, updated_at = $1 WHERE id = $2',
+        'UPDATE card SET comments_total = comments_total + 1, updated_at = ? WHERE id = ?',
         [new Date().toISOString(), comment.cardId],
       )
       .usingConnection(db);
@@ -72,22 +72,15 @@ const delete_ = (criteria) =>
       let query = 'UPDATE card SET comments_total = comments_total - CASE ';
 
       Object.entries(cardIdsByTotal).forEach(([total, cardIds]) => {
-        const inValues = cardIds.map((cardId) => {
-          queryValues.push(cardId);
-          return `$${queryValues.length}`;
-        });
-
+        cardIds.forEach((cardId) => queryValues.push(cardId));
+        query += `WHEN id IN (${cardIds.map(() => '?').join(', ')}) THEN ? `;
         queryValues.push(total);
-        query += `WHEN id IN (${inValues.join(', ')}) THEN $${queryValues.length}::int `;
       });
 
-      const inValues = Object.keys(commentsByCardId).map((cardId) => {
-        queryValues.push(cardId);
-        return `$${queryValues.length}`;
-      });
-
+      const inValues = Object.keys(commentsByCardId);
+      inValues.forEach((cardId) => queryValues.push(cardId));
       queryValues.push(new Date().toISOString());
-      query += `END, updated_at = $${queryValues.length} WHERE id IN (${inValues.join(', ')})`;
+      query += `END, updated_at = ? WHERE id IN (${inValues.map(() => '?').join(', ')})`;
 
       await sails.sendNativeQuery(query, queryValues).usingConnection(db);
     }
@@ -101,7 +94,7 @@ const deleteOne = (criteria) =>
 
     const queryResult = await sails
       .sendNativeQuery(
-        'UPDATE card SET comments_total = comments_total - 1, updated_at = $1 WHERE id = $2',
+        'UPDATE card SET comments_total = comments_total - 1, updated_at = ? WHERE id = ?',
         [new Date().toISOString(), comment.cardId],
       )
       .usingConnection(db);

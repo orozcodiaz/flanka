@@ -4,13 +4,13 @@
  */
 
 module.exports.up = (knex) =>
-  knex.schema.raw(`
-    ALTER INDEX card_name_index RENAME TO card_name_gin_index;
-    ALTER INDEX card_description_index RENAME TO card_description_gin_index;
+  knex.raw(`
+    ALTER TABLE card RENAME INDEX card_name_index TO card_name_gin_index;
+    ALTER TABLE card RENAME INDEX card_description_index TO card_description_gin_index;
   `);
 
 module.exports.down = (knex) =>
-  knex.schema.raw(`
-    ALTER INDEX card_name_gin_index RENAME TO card_name_index;
-    ALTER INDEX card_description_gin_index RENAME TO card_description_index;
+  knex.raw(`
+    ALTER TABLE card RENAME INDEX card_name_gin_index TO card_name_index;
+    ALTER TABLE card RENAME INDEX card_description_gin_index TO card_description_index;
   `);

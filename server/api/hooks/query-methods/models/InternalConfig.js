@@ -13,9 +13,9 @@ const getOneMain = () => InternalConfig.findOne(InternalConfig.MAIN_ID);
 
 const updateOneMain = (values) =>
   sails.getDatastore().transaction(async (db) => {
-    let queryResult = await sails
+    const queryResult = await sails
       .sendNativeQuery(
-        'SELECT active_users_limit FROM internal_config WHERE id = $1 LIMIT 1 FOR UPDATE',
+        'SELECT active_users_limit FROM internal_config WHERE id = ? LIMIT 1 FOR UPDATE',
         [InternalConfig.MAIN_ID],
       )
       .usingConnection(db);
@@ -33,28 +33,30 @@ const updateOneMain = (values) =>
     ) {
       const { defaultAdminEmail } = sails.config.custom;
 
-      const query = `
-        WITH user_to_deactivate AS (
-          SELECT id
-          FROM user_account
-          WHERE is_deactivated = false
-          ORDER BY
-            CASE ${defaultAdminEmail ? 'WHEN email = $1 THEN 0 WHEN role = $2 THEN 1' : 'WHEN role = $1 THEN 0'} ELSE ${defaultAdminEmail ? '2' : '1'} END,
-            id
-          OFFSET $${defaultAdminEmail ? 3 : 2}
-        )
-        UPDATE user_account
-        SET is_deactivated = true
-        WHERE id IN (SELECT id FROM user_to_deactivate)
-        RETURNING id
+      const selectQuery = `
+        SELECT id FROM user_account
+        WHERE is_deactivated = false
+        ORDER BY
+          CASE ${defaultAdminEmail ? 'WHEN email = ? THEN 0 WHEN role = ? THEN 1' : 'WHEN role = ? THEN 0'} ELSE ${defaultAdminEmail ? '2' : '1'} END,
+          id
+        LIMIT 18446744073709551615 OFFSET ?
       `;
-
-      const queryValues = defaultAdminEmail
+      const selectValues = defaultAdminEmail
         ? [defaultAdminEmail, User.Roles.ADMIN, internalConfig.activeUsersLimit]
         : [User.Roles.ADMIN, internalConfig.activeUsersLimit];
 
-      queryResult = await sails.sendNativeQuery(query, queryValues).usingConnection(db);
-      deactivatedUserIds = queryResult.rows.map((row) => row.id);
+      const selResult = await sails.sendNativeQuery(selectQuery, selectValues).usingConnection(db);
+      deactivatedUserIds = selResult.rows.map((row) => row.id);
+
+      if (deactivatedUserIds.length > 0) {
+        const placeholders = deactivatedUserIds.map(() => '?').join(', ');
+        await sails
+          .sendNativeQuery(
+            `UPDATE user_account SET is_deactivated = true WHERE id IN (${placeholders})`,
+            deactivatedUserIds,
+          )
+          .usingConnection(db);
+      }
     }
 
     return { internalConfig, deactivatedUserIds, prev };

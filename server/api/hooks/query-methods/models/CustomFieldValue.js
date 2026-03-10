@@ -20,23 +20,27 @@ const defaultFind = (criteria, { customFieldGroupIdOrIds } = {}) => {
 const create = (arrayOfValues) => CustomFieldValue.createEach(arrayOfValues).fetch();
 
 const createOrUpdateOne = async (values) => {
+  const now = new Date().toISOString();
   const query = `
     INSERT INTO custom_field_value (card_id, custom_field_group_id, custom_field_id, content, created_at)
-    VALUES ($1, $2, $3, $4, $5)
-    ON CONFLICT (card_id, custom_field_group_id, custom_field_id)
-    DO UPDATE SET content = EXCLUDED.content, updated_at = EXCLUDED.created_at
-    RETURNING *
+    VALUES (?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = VALUES(created_at)
   `;
 
-  const queryResult = await sails.sendNativeQuery(query, [
+  await sails.sendNativeQuery(query, [
     values.cardId,
     values.customFieldGroupId,
     values.customFieldId,
     values.content,
-    new Date().toISOString(),
+    now,
   ]);
 
-  return transformRowToModel(queryResult.rows[0]);
+  const selResult = await sails.sendNativeQuery(
+    'SELECT * FROM custom_field_value WHERE card_id = ? AND custom_field_group_id = ? AND custom_field_id = ? LIMIT 1',
+    [values.cardId, values.customFieldGroupId, values.customFieldId],
+  );
+
+  return transformRowToModel(selResult.rows[0]);
 };
 
 const getByIds = (ids) => defaultFind(ids);

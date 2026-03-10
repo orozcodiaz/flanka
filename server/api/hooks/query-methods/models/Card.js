@@ -62,50 +62,40 @@ const getByEndlessListId = async (listId, { before, search, userIds, labelIds })
     }
 
     queryValues.push(listId);
-    query += ` WHERE card.list_id = $${queryValues.length}`;
+    query += ' WHERE card.list_id = ?';
 
     if (before) {
-      queryValues.push(before.listChangedAt);
-      query += ` AND (card.list_changed_at < $${queryValues.length} OR (card.list_changed_at = $${queryValues.length}`;
-
-      queryValues.push(before.id);
-      query += ` AND card.id < $${queryValues.length}))`;
+      queryValues.push(before.listChangedAt, before.listChangedAt, before.id);
+      query += ' AND (card.list_changed_at < ? OR (card.list_changed_at = ? AND card.id < ?))';
     }
 
     if (search) {
       if (search.startsWith('/')) {
-        queryValues.push(search.substring(1));
-        query += ` AND (card.name ~* $${queryValues.length} OR card.description ~* $${queryValues.length})`;
+        queryValues.push(search.substring(1), search.substring(1));
+        query += ' AND (card.name REGEXP ? OR card.description REGEXP ?)';
       } else {
         const searchParts = buildSearchParts(search);
 
         if (searchParts.length > 0) {
-          const ilikeValues = searchParts.map((searchPart) => {
-            queryValues.push(searchPart);
-            return `'%' || $${queryValues.length} || '%'`;
+          const conditions = [];
+          searchParts.forEach((searchPart) => {
+            queryValues.push(`%${searchPart}%`, `%${searchPart}%`);
+            conditions.push('(card.name LIKE ? OR card.description LIKE ?)');
           });
-
-          query += ` AND ((card.name ILIKE ALL(ARRAY[${ilikeValues.join(', ')}])) OR (card.description ILIKE ALL(ARRAY[${ilikeValues.join(', ')}])))`;
+          query += ` AND (${conditions.join(' AND ')})`;
         }
       }
     }
 
     if (userIds) {
-      const inValues = userIds.map((userId) => {
-        queryValues.push(userId);
-        return `$${queryValues.length}`;
-      });
-
-      query += ` AND (card_membership.user_id IN (${inValues.join(', ')}) OR task.assignee_user_id IN (${inValues.join(', ')}))`;
+      userIds.forEach((userId) => queryValues.push(userId, userId));
+      const placeholders = userIds.map(() => '?').join(', ');
+      query += ` AND (card_membership.user_id IN (${placeholders}) OR task.assignee_user_id IN (${placeholders}))`;
     }
 
     if (labelIds) {
-      const inValues = labelIds.map((labelId) => {
-        queryValues.push(labelId);
-        return `$${queryValues.length}`;
-      });
-
-      query += ` AND card_label.label_id IN (${inValues.join(', ')})`;
+      labelIds.forEach((labelId) => queryValues.push(labelId));
+      query += ` AND card_label.label_id IN (${labelIds.map(() => '?').join(', ')})`;
     }
 
     query += ` LIMIT ${LIMIT}`;

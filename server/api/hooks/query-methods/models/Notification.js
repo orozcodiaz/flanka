@@ -51,9 +51,9 @@ const createOne = (values) => {
         WITH exceeded_notification AS (
           SELECT id
           FROM notification
-          WHERE user_id = $1 AND is_read = FALSE
+          WHERE user_id = ? AND is_read = FALSE
           ORDER BY id DESC
-          OFFSET $2
+          LIMIT 18446744073709551615 OFFSET ?
         )
         UPDATE notification
         SET is_read = TRUE

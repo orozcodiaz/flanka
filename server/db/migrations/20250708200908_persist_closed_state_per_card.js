@@ -12,9 +12,9 @@ exports.up = async (knex) => {
 
   await knex.raw(`
     UPDATE card
-    SET is_closed = TRUE
-    FROM list
-    WHERE card.list_id = list.id AND list.type = 'closed';
+    INNER JOIN list ON card.list_id = list.id
+    SET card.is_closed = TRUE
+    WHERE list.type = 'closed';
   `);
 
   return knex.schema.alterTable('card', (table) => {

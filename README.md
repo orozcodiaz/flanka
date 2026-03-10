@@ -25,13 +25,13 @@
 
 ## Running locally
 
-You need **Node.js 20+** and **PostgreSQL**.
+You need **Node.js 20+** and **MySQL** (8+ recommended).
 
 1. Copy the env template and add your credentials:
    ```bash
    cp server/.env.example server/.env
    ```
-   Edit `server/.env` and set at least `BASE_URL`, `DATABASE_URL`, and `SECRET_KEY`.
+   Edit `server/.env` and set at least `BASE_URL`, `SECRET_KEY`, and the MySQL connection (`MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`), or a single `DATABASE_URL=mysql://user:password@host:port/database`.
 
 2. Install, build, and run:
    ```bash

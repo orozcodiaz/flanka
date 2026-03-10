@@ -7,7 +7,7 @@ exports.up = async (knex) => {
   await knex.schema.createTable('internal_config', (table) => {
     /* Columns */
 
-    table.bigInteger('id').primary().defaultTo(knex.raw('next_id()'));
+    table.bigIncrements('id').primary();
 
     table.text('storage_limit');
     table.integer('active_users_limit');

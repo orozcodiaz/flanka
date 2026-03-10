@@ -22,6 +22,7 @@
 const { URL } = require('url');
 
 const { customLogger } = require('../../utils/logger');
+const { getDatabaseUrl } = require('../database-url');
 
 const origins = process.env.BASE_URL.split(',').map((baseUrl) => new URL(baseUrl).origin);
 
@@ -52,20 +53,8 @@ module.exports = {
      */
 
     default: {
-      // adapter: 'sails-mysql',
-      // url: 'mysql://user:password@host:port/database',
-      /**
-       *
-       * More adapter-specific options
-       *
-       * > For example, for some hosted PostgreSQL providers (like Heroku), the
-       * > extra `ssl: true` option is mandatory and must be provided.
-       *
-       * More info:
-       * https://sailsjs.com/config/datastores
-       *
-       */
-      // ssl: true,
+      adapter: 'sails-mysql',
+      url: getDatabaseUrl(),
     },
   },
 

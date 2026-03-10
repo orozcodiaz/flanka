@@ -25,8 +25,8 @@ const createOne = (values) =>
 
     await sails
       .sendNativeQuery(
-        `UPDATE storage_usage SET total = total + $1, ${columnName} = ${columnName} + $1, updated_at = $2 WHERE id = $3`,
-        [uploadedFile.size, new Date().toISOString(), StorageUsage.MAIN_ID],
+        `UPDATE storage_usage SET total = total + ?, ${columnName} = ${columnName} + ?, updated_at = ? WHERE id = ?`,
+        [uploadedFile.size, uploadedFile.size, new Date().toISOString(), StorageUsage.MAIN_ID],
       )
       .usingConnection(db);
 
@@ -40,8 +40,8 @@ const deleteOne = (criteria) =>
 
     await sails
       .sendNativeQuery(
-        `UPDATE storage_usage SET total = total - $1, ${columnName} = ${columnName} - $1, updated_at = $2 WHERE id = $3`,
-        [uploadedFile.size, new Date().toISOString(), StorageUsage.MAIN_ID],
+        `UPDATE storage_usage SET total = total - ?, ${columnName} = ${columnName} - ?, updated_at = ? WHERE id = ?`,
+        [uploadedFile.size, uploadedFile.size, new Date().toISOString(), StorageUsage.MAIN_ID],
       )
       .usingConnection(db);
 

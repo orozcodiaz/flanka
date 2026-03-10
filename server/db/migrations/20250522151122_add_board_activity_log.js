@@ -16,11 +16,10 @@ exports.up = async (knex) => {
 
   return knex.raw(`
     UPDATE action
+    INNER JOIN card ON action.card_id = card.id
     SET
-      board_id = card.board_id,
-      data = data || jsonb_build_object('card', jsonb_build_object('name', card.name))
-    FROM card
-    WHERE action.card_id = card.id;
+      action.board_id = card.board_id,
+      action.data = JSON_SET(COALESCE(action.data, '{}'), '$.card', JSON_OBJECT('name', card.name))
   `);
 };
 

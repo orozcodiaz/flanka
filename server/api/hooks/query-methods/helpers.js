@@ -22,13 +22,13 @@ const makeWhereQueryBuilder = (Model) => (criteria) => {
       }
 
       values.push(value);
-      parts.push(`${columnName} = $${values.length}`);
+      parts.push(`\`${columnName}\` = ?`);
     }
 
     return [parts.join(' AND '), values];
   }
 
-  return ['id = $1', [criteria]];
+  return ['id = ?', [criteria]];
 };
 
 const makeRowToModelTransformer = (Model) => {

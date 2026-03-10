@@ -12,13 +12,12 @@ exports.up = async (knex) => {
 
   await knex.raw(`
     UPDATE card
-    SET comments_total = comments_total_by_card_id.comments_total
-    FROM (
+    INNER JOIN (
       SELECT card_id, COUNT(*) as comments_total
       FROM comment
       GROUP BY card_id
-    ) AS comments_total_by_card_id
-    WHERE card.id = comments_total_by_card_id.card_id;
+    ) AS comments_total_by_card_id ON card.id = comments_total_by_card_id.card_id
+    SET card.comments_total = comments_total_by_card_id.comments_total
   `);
 
   return knex.schema.alterTable('card', (table) => {

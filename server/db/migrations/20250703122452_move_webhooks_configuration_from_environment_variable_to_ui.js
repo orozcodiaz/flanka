@@ -7,7 +7,7 @@ exports.up = (knex) =>
   knex.schema.createTable('webhook', (table) => {
     /* Columns */
 
-    table.bigInteger('id').primary().defaultTo(knex.raw('next_id()'));
+    table.bigIncrements('id').primary();
 
     table.bigInteger('board_id');
 

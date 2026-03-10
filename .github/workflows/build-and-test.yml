@@ -13,9 +13,22 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      POSTGRES_USERNAME: planka
-      POSTGRES_PASSWORD: planka
-      POSTGRES_DATABASE: planka
+      MYSQL_USER: planka
+      MYSQL_PASSWORD: planka
+      MYSQL_DATABASE: planka
+      MYSQL_PORT: 3306
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: ${{ env.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout repository
@@ -26,13 +39,6 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-
-      - name: Set up PostgreSQL
-        uses: ikalnytskyi/action-setup-postgres@v5
-        with:
-          username: ${{ env.POSTGRES_USERNAME }}
-          password: ${{ env.POSTGRES_PASSWORD }}
-          database: ${{ env.POSTGRES_DATABASE }}
 
       - name: Cache Node.js modules
         uses: actions/cache@v3
@@ -54,23 +60,28 @@ jobs:
           DEFAULT_ADMIN_PASSWORD: demo
           DEFAULT_ADMIN_NAME: Demo Demo
           DEFAULT_ADMIN_USERNAME: demo
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: 3306
+          MYSQL_USER: planka
+          MYSQL_PASSWORD: planka
+          MYSQL_DATABASE: planka
         run: |
           client/tests/setup-symlinks.sh
           cd server
           cp .env.example .env
-          sed -i "s|^DATABASE_URL=.*|DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DATABASE}|" .env
           npm run db:init
           npm start --prod &
 
       - name: Wait for server to start
         run: |
-          sudo apt-get install wait-for-it -y
-          wait-for-it -h localhost -p 1337 -t 10
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client wait-for-it
+          wait-for-it -h 127.0.0.1 -p 1337 -t 10
 
       - name: Seed database with terms signature
         run: |
           TERMS_SIGNATURE=$(sha256sum terms/_template/en-US.md | awk '{print $1}')
-          PGPASSWORD=$POSTGRES_PASSWORD psql -h localhost -U $POSTGRES_USERNAME -d $POSTGRES_DATABASE -c "UPDATE user_account SET terms_signature = '$TERMS_SIGNATURE';"
+          mysql -h 127.0.0.1 -P 3306 -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "UPDATE user_account SET terms_signature = '$TERMS_SIGNATURE';"
         working-directory: ./server
 
       - name: Run UI tests

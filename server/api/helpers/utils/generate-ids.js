@@ -12,11 +12,18 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const queryResult = await sails.sendNativeQuery(
-      'SELECT next_id() as id from generate_series(1, $1) ORDER BY id',
-      [inputs.total],
-    );
+    const { total } = inputs;
+    if (total <= 0) {
+      return [];
+    }
 
-    return sails.helpers.utils.mapRecords(queryResult.rows);
+    const placeholders = Array(total).fill('()').join(', ');
+    await sails.sendNativeQuery(`INSERT INTO _id_sequence () VALUES ${placeholders}`);
+
+    const result = await sails.sendNativeQuery('SELECT LAST_INSERT_ID() AS first_id');
+    const firstId = Number(result.rows[0].first_id);
+    const ids = Array.from({ length: total }, (_, i) => firstId + i);
+
+    return sails.helpers.utils.mapRecords(ids.map((id) => ({ id })));
   },
 };
